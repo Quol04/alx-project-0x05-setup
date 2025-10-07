@@ -14,7 +14,9 @@ const Home: React.FC = () => {
 
 
   const handleGenerateImage = async () => {
+    if (!prompt) return;
     console.log("Generating Images");
+    setPrompt("");
   };
 
   return (
