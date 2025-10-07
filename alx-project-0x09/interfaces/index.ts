@@ -13,4 +13,8 @@ export interface GeneratedImageProps{
 
 }
 
+export interface RequestProps{
+    prompt: string
+}
+
 export type ImageProps = Pick<GeneratedImageProps, "imageUrl" | "prompt">
