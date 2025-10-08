@@ -1,57 +1,25 @@
 import ImageCard from "@/components/common/ImageCard";
+import useFetchData from "@/hooks/useFetchData";
 import { ImageProps } from "@/interfaces";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const Home: React.FC = () => {
   const [prompt, setPrompt] = useState<string>("");
   const [imageUrl, setImageUrl] = useState<string>("");
-  const [generatedImages, setGeneratedImages] = useState<ImageProps[]>(
-    []
-  );
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const { isLoading, responseData, generatedImages, fetchData } = useFetchData<any, { prompt: string}>();
+
+  const handleGenerateImage =  () => {
+    fetchData('/api/generate-image', { prompt })
+  }
 
 
-  const handleGenerateImage = async () => {
-    // basic validation
-    if (!prompt || !prompt.trim()) {
-      alert('Please enter a prompt to generate an image.');
-      return;
+  useEffect(() => {
+    if (!isLoading) {
+      setImageUrl(responseData?.message)
     }
+  }, [isLoading])
 
-    setIsLoading(true);
-    try {
-      const resp = await fetch("/api/generate-image", {
-        method: "POST",
-        body: JSON.stringify({ prompt }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
 
-      if (!resp.ok) {
-        const text = await resp.text();
-        console.error("API responded with non-OK status:", resp.status, text);
-        alert("Failed to generate image. See console for details.");
-        return;
-      }
-
-      const data = await resp.json();
-
-      if (!data || !data.message) {
-        console.error("API returned invalid payload:", data);
-        alert("Image generation failed: invalid response from server.");
-        return;
-      }
-
-      setImageUrl(data.message);
-      setGeneratedImages((prev) => [...prev, { imageUrl: data.message, prompt }]);
-    } catch (err) {
-      console.error("Error generating image:", err);
-      alert("An error occurred while generating the image. Check console for details.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100 p-4">
@@ -79,7 +47,7 @@ const Home: React.FC = () => {
           </button>
         </div>
 
-        {imageUrl && <ImageCard action={() => setImageUrl(imageUrl)} imageUrl={imageUrl} prompt={prompt} />}
+        {responseData?.message && <ImageCard action={() => setImageUrl( imageUrl)} imageUrl={imageUrl} prompt={prompt} />}
       </div>
       {
         generatedImages.length ? (
