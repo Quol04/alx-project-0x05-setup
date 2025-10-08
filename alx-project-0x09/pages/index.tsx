@@ -1,6 +1,7 @@
 import ImageCard from "@/components/common/ImageCard";
 import React, { useState } from "react";
 
+
 const Home: React.FC = () => {
   const [prompt, setPrompt] = useState<string>("");
   const [imageUrl, setImageUrl] = useState<string>("");
@@ -27,6 +28,7 @@ const Home: React.FC = () => {
 
     const data = await resp.json()
     setIsLoading(false)
+    console.log(data)
   };
 
   return (
