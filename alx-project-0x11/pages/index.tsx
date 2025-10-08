@@ -12,27 +12,45 @@ const Home: React.FC = () => {
 
 
   const handleGenerateImage = async () => {
-    setIsLoading(true);
-    const resp = await fetch('/api/generate-image', {
-      method: 'POST',
-      body: JSON.stringify({
-        prompt
-      }),
-      headers: {
-        'Content-type': 'application/json'
-      }
-    })
-
-
-    if (!resp.ok) {
-      setIsLoading(false)
+    // basic validation
+    if (!prompt || !prompt.trim()) {
+      alert('Please enter a prompt to generate an image.');
       return;
     }
 
-    const data = await resp.json()
-    setIsLoading(false)
-    setImageUrl(data?.message);
-    setGeneratedImages((prev) => [...prev, { imageUrl: data?.message, prompt }])
+    setIsLoading(true);
+    try {
+      const resp = await fetch("/api/generate-image", {
+        method: "POST",
+        body: JSON.stringify({ prompt }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!resp.ok) {
+        const text = await resp.text();
+        console.error("API responded with non-OK status:", resp.status, text);
+        alert("Failed to generate image. See console for details.");
+        return;
+      }
+
+      const data = await resp.json();
+
+      if (!data || !data.message) {
+        console.error("API returned invalid payload:", data);
+        alert("Image generation failed: invalid response from server.");
+        return;
+      }
+
+      setImageUrl(data.message);
+      setGeneratedImages((prev) => [...prev, { imageUrl: data.message, prompt }]);
+    } catch (err) {
+      console.error("Error generating image:", err);
+      alert("An error occurred while generating the image. Check console for details.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
